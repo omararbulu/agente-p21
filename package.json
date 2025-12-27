@@ -1,0 +1,11 @@
+{
+  "name": "agente-peru21-pro",
+  "version": "1.0.0",
+  "description": "Agente redactor profesional para Perú21 con backend seguro",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "keywords": ["peru21", "journalism", "ai", "article-generator"],
+  "author": "Equipo Perú21"
+}
