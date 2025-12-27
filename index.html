@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente Redactor Perú21</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #2d3748;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .url-input-section {
+            margin-bottom: 20px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="url"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-remove {
+            background: #f56565;
+            padding: 8px 16px;
+        }
+
+        .btn-remove:hover {
+            background: #e53e3e;
+        }
+
+        .sources-list {
+            margin-top: 20px;
+        }
+
+        .source-item {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .source-url {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 10px;
+        }
+
+        .options-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .option-group {
+            margin-bottom: 15px;
+        }
+
+        .option-group label {
+            display: block;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-content {
+            display: none;
+        }
+
+        .output-content.active {
+            display: block;
+        }
+
+        .cms-field {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .cms-field-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .cms-field-content {
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .cms-field-content.titular {
+            font-size: 22px;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .cms-field-content.bajada {
+            font-size: 16px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .cms-field-content.cuerpo {
+            font-size: 15px;
+            white-space: pre-wrap;
+        }
+
+        .cms-field-content.tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .cms-field-content.small {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #c53030;
+            border-left: 4px solid #f56565;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border-left: 4px solid #48bb78;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Agente Redactor Perú21</h1>
+            <p>Genera artículos periodísticos optimizados para SEO con el estilo auténtico de Perú21</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Panel de entrada -->
+            <div class="panel">
+                <h2>📥 Fuentes de Noticias</h2>
+                
+                <div class="url-input-section">
+                    <div class="url-input-group">
+                        <input type="url" id="urlInput" placeholder="https://ejemplo.com/noticia">
+                        <button onclick="addSource()">Agregar</button>
+                    </div>
+                    <div id="sourcesList" class="sources-list"></div>
+                </div>
+
+                <div class="options-section">
+                    <div class="option-group">
+                        <label for="tono">Tono del artículo:</label>
+                        <select id="tono">
+                            <option value="informativo">Informativo</option>
+                            <option value="urgente">Urgente/Última hora</option>
+                            <option value="analisis">Análisis</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label for="extension">Extensión aproximada:</label>
+                        <select id="extension">
+                            <option value="corta">Corta (300-400 palabras)</option>
+                            <option value="media" selected>Media (500-700 palabras)</option>
+                            <option value="larga">Larga (800-1000 palabras)</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label for="enfoque">Enfoque adicional (opcional):</label>
+                        <textarea id="enfoque" placeholder="Ej: Enfatizar impacto en Lima, incluir contexto político actual, etc."></textarea>
+                    </div>
+                </div>
+
+                <button onclick="generateArticle()" id="generateBtn" class="btn-secondary" style="width: 100%;">
+                    ✨ Generar Artículo
+                </button>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Procesando fuentes y generando artículo optimizado...</p>
+                </div>
+            </div>
+
+            <!-- Panel de salida -->
+            <div class="panel">
+                <h2>📄 Artículo Generado (Vista CMS)</h2>
+                
+                <div id="initialMessage" style="text-align: center; padding: 40px; color: #a0aec0;">
+                    <p>Agrega fuentes y genera tu artículo</p>
+                    <p style="font-size: 60px; margin: 20px 0;">📰</p>
+                    <p style="font-size: 13px;">El artículo se generará con todos los campos del CMS de Perú21</p>
+                </div>
+
+                <div id="outputContent" class="output-content">
+                    <div id="articlePreview"></div>
+                    
+                    <div class="action-buttons">
+                        <button onclick="copyToClipboard()">📋 Copiar Todo</button>
+                        <button onclick="copyField('titulo')">Copiar Título</button>
+                        <button onclick="downloadArticle()">💾 Descargar</button>
+                        <button onclick="regenerate()">🔄 Regenerar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sources = [];
+        let generatedArticle = null;
+
+        function addSource() {
+            const input = document.getElementById('urlInput');
+            const url = input.value.trim();
+            
+            if (!url) {
+                showAlert('Por favor ingresa una URL', 'error');
+                return;
+            }
+
+            if (!isValidUrl(url)) {
+                showAlert('Por favor ingresa una URL válida', 'error');
+                return;
+            }
+
+            if (sources.includes(url)) {
+                showAlert('Esta fuente ya fue agregada', 'error');
+                return;
+            }
+
+            sources.push(url);
+            input.value = '';
+            renderSources();
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function removeSource(index) {
+            sources.splice(index, 1);
+            renderSources();
+        }
+
+        function renderSources() {
+            const container = document.getElementById('sourcesList');
+            
+            if (sources.length === 0) {
+                container.innerHTML = '<p style="color: #a0aec0; font-size: 13px; text-align: center; padding: 20px;">No hay fuentes agregadas</p>';
+                return;
+            }
+
+            container.innerHTML = sources.map((url, index) => `
+                <div class="source-item">
+                    <span class="source-url" title="${url}">${url}</span>
+                    <button class="btn-remove" onclick="removeSource(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        async function generateArticle() {
+            if (sources.length === 0) {
+                showAlert('Debes agregar al menos una fuente', 'error');
+                return;
+            }
+
+            const tono = document.getElementById('tono').value;
+            const extension = document.getElementById('extension').value;
+            const enfoque = document.getElementById('enfoque').value;
+
+            // Mostrar loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('initialMessage').style.display = 'none';
+
+            try {
+                // Llamar a la API de Claude
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 4000,
+                        messages: [{
+                            role: 'user',
+                            content: buildPrompt(sources, tono, extension, enfoque)
+                        }],
+                        tools: [{
+                            type: "web_search_20250305",
+                            name: "web_search"
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Procesar la respuesta
+                const articleText = data.content
+                    .filter(block => block.type === 'text')
+                    .map(block => block.text)
+                    .join('\n');
+
+                generatedArticle = parseArticle(articleText);
+                displayArticle(generatedArticle);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error al generar el artículo. Por favor intenta nuevamente.', 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function buildPrompt(urls, tono, extension, enfoque) {
+            const extensionMap = {
+                'corta': '300-400 palabras',
+                'media': '500-700 palabras',
+                'larga': '800-1000 palabras'
+            };
+
+            return `Eres un redactor profesional del medio periodístico Perú21. Debes crear un artículo completo optimizado para SEO y listo para publicar.
+
+FUENTES:
+${urls.map((url, i) => `${i + 1}. ${url}`).join('\n')}
+
+PARÁMETROS:
+- Tono: ${tono}
+- Extensión del cuerpo: ${extensionMap[extension]}
+${enfoque ? `- Enfoque: ${enfoque}` : ''}
+
+GENERA EL ARTÍCULO EN ESTE FORMATO EXACTO:
+
+✅ Título (visible en la web)
+[Titular impactante estilo Perú21 con MAYÚSCULAS en palabras clave. Ejemplos:
+- "ADIÓS, 'TUKI TUKI': Matan a balazos a payasito en Ate"
+- "¿Temes estar ahí? Crean REGISTRO NACIONAL DE INFIELES"
+- "Oficializan AUMENTO DE LA UIT para el 2026: ¿Ahora cuánto valdrá?"
+Máximo 15 palabras, SIN punto final, debe generar curiosidad y urgencia]
+
+✅ Título SEO (máx. 60 caracteres, incluye palabra clave)
+[Versión optimizada para buscadores, más natural, con palabras clave que la gente buscaría en Google. Ejemplos:
+- Titular web: "ADIÓS, 'TUKI TUKI': Matan a balazos a payasito en Ate"
+  SEO: "Asesinan a payasito Tuki Tuki en Ate: detalles"
+- Titular web: "Oficializan AUMENTO DE LA UIT para el 2026: ¿Ahora cuánto valdrá?"
+  SEO: "UIT 2026: nuevo valor y cómo te afecta"]
+
+✅ Entradilla (resumen breve, visible en la nota)
+[Lead de 1-2 oraciones con lo MÁS importante. Datos concretos: nombres completos, cifras exactas, lugares específicos, horarios. Responde: ¿Quién? ¿Qué? ¿Cuándo? ¿Dónde? Tono directo.]
+
+✅ Descripción SEO (máx. 155 caracteres)
+[Meta descripción para Google. Incluye: gancho + dato clave + beneficio para el lector. Debe incentivar el clic.]
+
+✅ Cuerpo (estructura periodística)
+[Desarrollo completo con estas características:
+
+ESTRUCTURA:
+- Subtítulos descriptivos en negritas para cada sección
+- Párrafos MUY cortos: 2-4 oraciones máximo
+- Usa viñetas (*) cuando enumeres puntos
+- Una línea en blanco entre párrafos y secciones
+
+ESTILO:
+- Lenguaje directo y coloquial peruano
+- Nombres importantes en **negritas**
+- Cifras exactas en **negritas**
+- Citas textuales de autoridades cuando estén disponibles
+- Detalles específicos: edades, direcciones, horarios
+- Contexto local relevante para peruanos
+
+CONTENIDO:
+1. Amplía la información de la entradilla
+2. Desarrollo por secciones temáticas con subtítulos
+3. Contexto y antecedentes relevantes
+4. Declaraciones de fuentes (si aplica)
+5. Impacto o consecuencias
+6. Cierre con proyección o pregunta final
+
+Ejemplo de formato del cuerpo:
+**Subtítulo de la primera sección**
+Texto del primer párrafo con información relevante. Incluye **datos importantes en negritas**.
+
+Segunda oración del párrafo complementando la información.
+
+**Segundo subtítulo**
+Nuevo párrafo sobre otro aspecto. Cuando hay listas:
+* Primer punto importante
+* Segundo punto relevante
+* Tercer punto clave
+
+**Tercer subtítulo**
+Continuación con más detalles...
+
+**¿Qué sigue?** o **Conclusión**
+Cierre con proyección o dato final.]
+
+✅ Etiquetas sugeridas
+[3-5 palabras clave separadas por comas. Incluye: tema principal, nombres relevantes, ubicación, conceptos clave]
+
+REGLAS CRÍTICAS:
+✅ TODO 100% parafraseado (máximo 5-7 palabras literales seguidas de las fuentes)
+✅ Estilo Perú21: directo, impactante, cercano al lector peruano
+✅ Títulos optimizados para CTR y SEO
+✅ Datos verificables y coherentes entre fuentes
+✅ Citas apropiadas: "según [medio]", "informó [entidad]", "de acuerdo con..."
+
+NO incluyas ningún texto adicional, SOLO el formato solicitado con los checkmarks ✅`;
+        }
+
+        function parseArticle(text) {
+            const article = {
+                titulo: '',
+                tituloSEO: '',
+                entradilla: '',
+                descripcionSEO: '',
+                cuerpo: '',
+                etiquetas: []
+            };
+
+            // Dividir por las secciones con checkmarks
+            const sections = text.split('✅');
+            
+            sections.forEach(section => {
+                const trimmed = section.trim();
+                
+                if (trimmed.startsWith('Título (visible en la web)')) {
+                    const lines = trimmed.split('\n');
+                    article.titulo = lines[1]?.trim() || '';
+                } 
+                else if (trimmed.startsWith('Título SEO')) {
+                    const lines = trimmed.split('\n');
+                    article.tituloSEO = lines[1]?.trim() || '';
+                } 
+                else if (trimmed.startsWith('Entradilla')) {
+                    const lines = trimmed.split('\n');
+                    article.entradilla = lines.slice(1).join('\n').trim();
+                } 
+                else if (trimmed.startsWith('Descripción SEO')) {
+                    const lines = trimmed.split('\n');
+                    article.descripcionSEO = lines.slice(1).join('\n').trim();
+                } 
+                else if (trimmed.startsWith('Cuerpo')) {
+                    const lines = trimmed.split('\n');
+                    const bodyText = lines.slice(1).join('\n').trim();
+                    // Procesar negritas y formato
+                    article.cuerpo = bodyText
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n\n/g, '<br><br>')
+                        .replace(/^\* /gm, '• ');
+                } 
+                else if (trimmed.startsWith('Etiquetas sugeridas')) {
+                    const lines = trimmed.split('\n');
+                    const tagsLine = lines[1]?.trim() || '';
+                    article.etiquetas = tagsLine.split(',').map(t => t.trim()).filter(Boolean);
+                }
+            });
+
+            return article;
+        }
+
+        function displayArticle(article) {
+            const preview = document.getElementById('articlePreview');
+            
+            const fields = [
+                { label: 'Título (visible en la web)', content: article.titulo, cssClass: 'titular' },
+                { label: 'Título SEO (máx. 60 caracteres)', content: article.tituloSEO, cssClass: 'small' },
+                { label: 'Entradilla (resumen breve)', content: article.entradilla, cssClass: 'bajada' },
+                { label: 'Descripción SEO (máx. 155 caracteres)', content: article.descripcionSEO, cssClass: 'small' },
+                { label: 'Cuerpo (estructura periodística)', content: article.cuerpo, cssClass: 'cuerpo' }
+            ];
+
+            let html = '';
+
+            fields.forEach(field => {
+                if (field.content) {
+                    html += `
+                        <div class="cms-field">
+                            <div class="cms-field-label">✅ ${field.label}</div>
+                            <div class="cms-field-content ${field.cssClass}">${field.content}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Etiquetas
+            if (article.etiquetas.length > 0) {
+                html += `
+                    <div class="cms-field">
+                        <div class="cms-field-label">✅ Etiquetas sugeridas</div>
+                        <div class="cms-field-content tags">
+                            ${article.etiquetas.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            preview.innerHTML = html;
+            document.getElementById('outputContent').classList.add('active');
+        }
+
+        function copyToClipboard() {
+            if (!generatedArticle) return;
+
+            const text = `✅ Título (visible en la web)
+${generatedArticle.titulo}
+
+✅ Título SEO (máx. 60 caracteres, incluye palabra clave)
+${generatedArticle.tituloSEO}
+
+✅ Entradilla (resumen breve, visible en la nota)
+${generatedArticle.entradilla}
+
+✅ Descripción SEO (máx. 155 caracteres)
+${generatedArticle.descripcionSEO}
+
+✅ Cuerpo (estructura periodística)
+${generatedArticle.cuerpo.replace(/<strong>/g, '**').replace(/<\/strong>/g, '**').replace(/<br>/g, '\n').replace(/• /g, '* ')}
+
+✅ Etiquetas sugeridas
+${generatedArticle.etiquetas.join(', ')}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('Artículo completo copiado al portapapeles', 'success');
+            });
+        }
+
+        function copyField(fieldName) {
+            if (!generatedArticle) return;
+            
+            let text = '';
+            let label = '';
+            
+            switch(fieldName) {
+                case 'titulo':
+                    text = generatedArticle.titulo;
+                    label = 'Título';
+                    break;
+                case 'tituloSEO':
+                    text = generatedArticle.tituloSEO;
+                    label = 'Título SEO';
+                    break;
+                case 'entradilla':
+                    text = generatedArticle.entradilla;
+                    label = 'Entradilla';
+                    break;
+                case 'cuerpo':
+                    text = generatedArticle.cuerpo.replace(/<strong>/g, '**').replace(/<\/strong>/g, '**').replace(/<br>/g, '\n');
+                    label = 'Cuerpo';
+                    break;
+            }
+            
+            if (text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showAlert(`${label} copiado`, 'success');
+                });
+            }
+        }
+
+        function downloadArticle() {
+            if (!generatedArticle) return;
+
+            const text = `✅ Título (visible en la web)
+${generatedArticle.titulo}
+
+✅ Título SEO (máx. 60 caracteres, incluye palabra clave)
+${generatedArticle.tituloSEO}
+
+✅ Entradilla (resumen breve, visible en la nota)
+${generatedArticle.entradilla}
+
+✅ Descripción SEO (máx. 155 caracteres)
+${generatedArticle.descripcionSEO}
+
+✅ Cuerpo (estructura periodística)
+${generatedArticle.cuerpo.replace(/<strong>/g, '**').replace(/<\/strong>/g, '**').replace(/<br>/g, '\n').replace(/• /g, '* ')}
+
+✅ Etiquetas sugeridas
+${generatedArticle.etiquetas.join(', ')}`;
+            
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `peru21-articulo-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function regenerate() {
+            generateArticle();
+        }
+
+        function showAlert(message, type) {
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) existingAlert.remove();
+
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            const panel = document.querySelector('.panel');
+            panel.insertBefore(alert, panel.firstChild);
+
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        // Permitir agregar fuente con Enter
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addSource();
+            }
+        });
+
+        // Inicializar
+        renderSources();
+    </script>
+</body>
+</html>
